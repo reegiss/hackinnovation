@@ -6,4 +6,47 @@
     <string name="nav_header_subtitle">android.studio@android.com</string>
     <string name="nav_header_desc">Navigation header</string>
     <string name="action_settings">Settings</string>
+    <string name="start">Começar</string>
+    <string name="skip">Ignorar</string>
+    <string name="next">Proximo</string>
+    <string name="slide_1_title">Seja Bem Vindo !!!</string>
+    <string name="slide_1_desc">Diferente de tudo que você já viu!</string>
+    <string name="slide_2_title">Lorem Ipsum</string>
+    <string name="slide_2_desc">Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.</string>
+    <string name="slide_3_title">Lorem Ipsum</string>
+    <string name="slide_3_desc">Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.</string>
+    <string name="slide_4_desc">Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.</string>
+    <string name="slide_4_title">titulo</string>
+    <string name="btn_forgot_password">Esqueceu sua Senha?</string>
+    <string name="lbl_forgot_password">Esqueceu sua Senha?</string>
+    <string name="forgot_password_msg">Precisamos apenas do seu e-mail registrado para enviar a você as instruções de redefinição de senha.</string>
+    <string name="hint_email">Email</string>
+    <string name="btn_reset_password">Recuperar Senha</string>
+    <string name="btn_back">Voltar</string>
+
+    <!-- dots inactive colors -->
+    <color name="dot_dark_screen1">#14a895</color>
+    <color name="dot_dark_screen2">#14a895</color>
+    <color name="dot_dark_screen3">#14a895</color>
+    <color name="dot_dark_screen4">#14a895</color>
+
+    <!-- dots active colors -->
+    <color name="dot_light_screen1">#ffffff</color>
+    <color name="dot_light_screen2">#ffffff</color>
+    <color name="dot_light_screen3">#ffffff</color>
+    <color name="dot_light_screen4">#ffffff</color>
+
+    <array name="array_dot_active">
+        <item>@color/dot_light_screen1</item>
+        <item>@color/dot_light_screen2</item>
+        <item>@color/dot_light_screen3</item>
+        <item>@color/dot_light_screen4</item>
+    </array>
+
+    <array name="array_dot_inactive">
+        <item>@color/dot_dark_screen1</item>
+        <item>@color/dot_dark_screen2</item>
+        <item>@color/dot_dark_screen3</item>
+        <item>@color/dot_dark_screen4</item>
+    </array>
 </resources>
