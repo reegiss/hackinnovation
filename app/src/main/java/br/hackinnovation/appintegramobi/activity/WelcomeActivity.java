@@ -1,14 +1,21 @@
 package br.hackinnovation.appintegramobi.activity;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,10 +23,14 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.afollestad.materialdialogs.MaterialDialog;
+import com.google.firebase.auth.FirebaseAuth;
+
 import br.hackinnovation.appintegramobi.R;
 
 public class WelcomeActivity extends AppCompatActivity {
 
+    private static final int REQUEST_LOCATION = 1;
     private Button btnSkip, btnNext;
     public static final String TAG = "WelcomeActivity";
     private static boolean wifiConnected = false;
@@ -71,11 +82,13 @@ public class WelcomeActivity extends AppCompatActivity {
         dotsLayout = findViewById(R.id.layoutDots);
         btnSkip = findViewById(R.id.btn_skip);
         btnNext = findViewById(R.id.btn_next);
+//        layouts = new int[]{
+//                R.layout.welcome_side1,
+//                R.layout.welcome_side2,
+//                R.layout.welcome_side3,
+//                R.layout.welcome_side4};
         layouts = new int[]{
-                R.layout.welcome_side1,
-                R.layout.welcome_side2,
-                R.layout.welcome_side3,
-                R.layout.welcome_side4};
+                R.layout.welcome_side1};
         addBottomDots(0);
         viewPagerAdapter = new MyViewPagerAdapter();
         viewPager.setAdapter(viewPagerAdapter);
@@ -91,12 +104,53 @@ public class WelcomeActivity extends AppCompatActivity {
                 launchHomeScreen();
             }
         });
+
+        checkAcessoGps();
+        FirebaseAuth.getInstance().signOut();
+
     }
 
     private void launchHomeScreen() {
-        Intent intent = new Intent(WelcomeActivity.this, LoginActivity.class);
-        startActivity(intent);
-        finish();
+        if (!isNetworkAvailable()) {
+            new MaterialDialog.Builder(WelcomeActivity.this)
+                    .title("Sem Internet!")
+                    .content("Você não tem nenhuma conexão de internet disponível!\nHabilite para continuar.")
+                    .positiveText("ok")
+//                    .negativeText("Cancelar")
+                    .limitIconToDefaultSize()
+                    .canceledOnTouchOutside(false)
+                    .onPositive((dialog, which) -> {
+                        Log.d("tag", "sem internet");
+                        finish();
+                    })
+                    .show();
+        } else {
+            checkUsuarioLogado();
+            Intent intent = new Intent(WelcomeActivity.this, LoginActivity.class);
+            startActivity(intent);
+            finish();
+        }
+    }
+
+    private void checkUsuarioLogado() {
+
+    }
+
+    private boolean isNetworkAvailable() {
+        boolean haveConnectedWifi = false;
+        boolean haveConnectedMobile = false;
+
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo[] netInfo = cm.getAllNetworkInfo();
+        for (NetworkInfo ni : netInfo) {
+            if (ni.getTypeName().equalsIgnoreCase("WIFI"))
+                if (ni.isConnected())
+                    haveConnectedWifi = true;
+            if (ni.getTypeName().equalsIgnoreCase("MOBILE"))
+                if (ni.isConnected())
+                    haveConnectedMobile = true;
+        }
+        return haveConnectedWifi || haveConnectedMobile;
     }
 
     private int getItem(int i) {
@@ -121,6 +175,32 @@ public class WelcomeActivity extends AppCompatActivity {
         if (dots.length > 0)
             dots[currentPage].setTextColor(colorsActive[currentPage]);
     }
+
+    private void checkAcessoGps() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.ACCESS_FINE_LOCATION)) {
+                new MaterialDialog.Builder(WelcomeActivity.this)
+                        .title("Permissão GPS")
+                        .content("Necessário habilitar serviço de Localização!\nHabilite para continuar.")
+                        .positiveText("Confirmar")
+                        //.negativeText("Cancelar")
+                        .limitIconToDefaultSize()
+                        .canceledOnTouchOutside(false)
+                        .onPositive((dialog, which) -> {
+                            //Intent intent=new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                            //startActivity(intent);
+                            ActivityCompat.requestPermissions(WelcomeActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION);
+                        })
+                        .show();
+            } else {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION);
+            }
+
+        }
+    }
+
 
     public class MyViewPagerAdapter extends PagerAdapter {
         private LayoutInflater layoutInflater;

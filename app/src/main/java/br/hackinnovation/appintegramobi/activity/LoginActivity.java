@@ -14,14 +14,23 @@ import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
-import br.hackinnovation.appintegramobi.MainActivity;
 import br.hackinnovation.appintegramobi.R;
 
 public class LoginActivity extends AppCompatActivity {
+
+    public static final String TAG = "WelcomeActivity";
+    private static boolean wifiConnected = false;
+    private static boolean mobileConnected = false;
 
     private Button buttonLogin;
     private Button buttonRegister;
@@ -33,6 +42,7 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        FirebaseApp.initializeApp(this);
         setContentView(R.layout.activity_login);
         this.setTitle("Login");
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -45,10 +55,35 @@ public class LoginActivity extends AppCompatActivity {
         mEmail = findViewById(R.id.edit_login_email);
         mPassword = findViewById(R.id.edit_login_password);
 
+        mEmail.setText("reegiss@hotmail.com");
+        mPassword.setText("123456");
+
         buttonLogin.setOnClickListener(v -> {
+
+            if (mEmail.getText().toString().isEmpty()) {
+                mEmail.setError("Preencha o email");
+                return;
+            }
+            if (mPassword.getText().toString().isEmpty()) {
+                mPassword.setError("Preencha a senha");
+                return;
+            }
             final String email = mEmail.getText().toString();
             final String password = mPassword.getText().toString();
-            startLogin(email, password);
+            mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(LoginActivity.this, new OnCompleteListener<AuthResult>() {
+                @Override
+                public void onComplete(@NonNull Task<AuthResult> task) {
+                    if (!task.isSuccessful()) {
+                        Log.d("tag", "falha login");
+                    } else {
+                        Intent intent = new Intent(LoginActivity.this, CustomerMapActivity.class);
+                        startActivity(intent);
+                        finish();
+                        return;
+                    }
+                }
+            });
+
         });
 
         buttonRegister.setOnClickListener(v -> {
@@ -63,16 +98,16 @@ public class LoginActivity extends AppCompatActivity {
 
 
         mAuth = FirebaseAuth.getInstance();
-        firebaseAuthListener = new FirebaseAuth.AuthStateListener() {
-            @Override
-            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-                if(user!=null){
-                    Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                    startActivity(intent);
-                    finish();
-                    return;
-                }
+        firebaseAuthListener = firebaseAuth -> {
+            FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+            if (user != null) {
+                checkUserAccType();
+            }
+            if(user!=null){
+                Intent intent = new Intent(LoginActivity.this, CustomerMapActivity.class);
+                startActivity(intent);
+                finish();
+                return;
             }
         };
 
@@ -81,7 +116,36 @@ public class LoginActivity extends AppCompatActivity {
 
     }
 
+    private void checkUserAccType() {
+        DatabaseReference mCustomerDatabase;
+        String userID;
+
+        userID = mAuth.getCurrentUser().getUid();
+        mCustomerDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child("Customers").child(userID);
+        mCustomerDatabase.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists() && dataSnapshot.getChildrenCount() > 0) {
+                    Intent intent = new Intent(LoginActivity.this, CustomerMapActivity.class);
+                    startActivity(intent);
+                    finish();
+                    return;
+                } else {
+                    Intent intent = new Intent(LoginActivity.this, CustomerMapActivity.class);
+                    startActivity(intent);
+                    finish();
+                    return;
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
+    }
+
     private void startLogin(String email, String password) {
+
         mAuth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
@@ -90,11 +154,11 @@ public class LoginActivity extends AppCompatActivity {
                             // Sign in success, update UI with the signed-in user's information
                             Log.d("tag", "signInWithEmail:success");
                             FirebaseUser user = mAuth.getCurrentUser();
-//                            updateUI(user);
+                            updateUI(user);
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w("tag", "signInWithEmail:failure", task.getException());
-                            Toast.makeText(LoginActivity.this, "Authentication failed.",
+                            Toast.makeText(LoginActivity.this, "Ocorreu uma falha ao efetuar login.",
                                     Toast.LENGTH_SHORT).show();
 //                            updateUI(null);
                         }
@@ -104,11 +168,15 @@ public class LoginActivity extends AppCompatActivity {
                 });
     }
 
+    private void updateUI(FirebaseUser user) {
+
+    }
+
     @Override
     public void onStart() {
         super.onStart();
         // Check if user is signed in (non-null) and update UI accordingly.
-        FirebaseUser currentUser = mAuth.getCurrentUser();
+//        FirebaseUser currentUser = mAuth.getCurrentUser();
 //        updateUI(currentUser);
     }
 }
