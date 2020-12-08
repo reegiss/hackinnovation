@@ -26,3 +26,15 @@ allprojects {
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
+
+plugins {
+  id "org.sonarqube" version "3.0"
+}
+
+sonarqube {
+  properties {
+    property "sonar.projectKey", "reegiss_hackinnovation"
+    property "sonar.organization", "reegiss"
+    property "sonar.host.url", "https://sonarcloud.io"
+  }
+}
