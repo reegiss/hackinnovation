@@ -2,9 +2,12 @@ package br.hackinnovation.appintegramobi.activity;
 
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
+
+
 import android.view.WindowManager;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import br.hackinnovation.appintegramobi.R;
 
